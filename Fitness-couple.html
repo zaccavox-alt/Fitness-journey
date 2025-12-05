@@ -470,6 +470,7 @@
       color: var(--text-soft);
       font-size: 0.8rem;
     }
+
     .badge-grid {
       display: flex;
       flex-wrap: wrap;
@@ -693,7 +694,6 @@
         <div class="badge-grid" id="badgeGrid"></div>
 
         <div class="charts">
-
           <div class="chart-card">
             <div class="chart-card-title">Workouts (last 7 days)</div>
             <div class="chart-wrapper">
@@ -737,7 +737,7 @@
     const APP_KEY = "couple_fitness_v1";
     const ROOM_KEY = "couple_fitness_room_id";
 
-    // 🔐 PASTE YOUR REAL FIREBASE CONFIG VALUES HERE
+    // 🔐 Firebase config (yours)
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyBftBxf5k7Nf0n2LnXUGNn2jK9clCejpuQ",
       authDomain: "fitness-journey-46e01.firebaseapp.com",
@@ -1072,422 +1072,6 @@
       };
     }
 
-    function renderSummary() {
-      const user = getActiveUser();
-      const summaryTitle = document.getElementById("summaryTitle");
-      summaryTitle.textContent = `${user.label}'s last 7 days`;
-
-      const chipsContainer = document.getElementById("summaryChips");
-
-      const activeTotals = getLast7DayTotals(user);
-      const workoutsGoal = user.goals.workoutsPerWeek || 0;
-      const minutesGoal = user.goals.minutesPerWeek || 0;
-
-      chipsContainer.innerHTML = `
-        <div class="chip">
-          <span class="chip-dot"></span>
-          ${activeTotals.workouts} / ${workoutsGoal} workouts
-        </div>
-        <div class="chip">
-          <span class="chip-dot"></span>
-          ${activeTotals.minutes} / ${minutesGoal} min
-        </div>
-        <div class="chip">
-          <span class="chip-dot"></span>
-          Logged on ${activeTotals.days} / 7 days
-        </div>
-      `;
-
-      const coupleRow = document.getElementById("coupleSummaryRow");
-      const youTotals = getLast7DayTotals(state.users.you);
-      const partnerTotals = getLast7DayTotals(state.users.partner);
-      const coupleWorkouts = youTotals.workouts + partnerTotals.workouts;
-      const coupleMinutes = youTotals.minutes + partnerTotals.minutes;
-
-      coupleRow.innerHTML = `
-        <div class="chip">
-          <span class="chip-dot"></span>
-          ${state.users.you.label}: ${youTotals.workouts} w, ${youTotals.minutes} min
-        </div>
-        <div class="chip">
-          <span class="chip-dot"></span>
-          ${state.users.partner.label}: ${partnerTotals.workouts} w, ${partnerTotals.minutes} min
-        </div>
-        <div class="chip">
-          <span class="chip-dot"></span>
-          Together: ${coupleWorkouts} w, ${coupleMinutes} min
-        </div>
-      `;
-    }
-
-    function renderEntries() {
-      const user = getActiveUser();
-      const container = document.getElementById("entriesContainer");
-      const entries = [...(user.entries || [])];
-
-      entries.sort((a, b) => {
-        const da = new Date(a.date + "T00:00:00");
-        const db = new Date(b.date + "T00:00:00");
-        return db - da;
-      });
-
-      if (entries.length === 0) {
-        container.innerHTML = `<div class="empty-state">
-          No entries yet. Log your first workout and start your streak together. ✨
-        </div>`;
-        return;
-      }
-
-      const rows = entries
-        .map((e) => {
-          const date = formatDate(e.date);
-          const workouts = e.workouts || 0;
-          const minutes = e.minutes || 0;
-          const steps = e.steps ?? "";
-          const notes = e.notes || "";
-          const safeTitle = String(notes).replace(/"/g, "&quot;");
-          return `
-            <tr>
-              <td>${date}</td>
-              <td>${workouts}</td>
-              <td>${minutes}</td>
-              <td>${steps === null ? "" : steps}</td>
-              <td class="note-cell" title="${safeTitle}">
-                ${notes || "<span style='color:var(--text-soft);'>—</span>"}
-              </td>
-              <td style="text-align:right;">
-                <button type="button" class="btn-icon" data-entry-id="${e.id}">
-                  🗑
-                </button>
-              </td>
-            </tr>
-          `;
-        })
-        .join("");
-
-      container.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th style="width:70px;">Date</th>
-              <th style="width:60px;">Workouts</th>
-              <th style="width:80px;">Minutes</th>
-              <th style="width:80px;">Steps</th>
-              <th>Notes</th>
-              <th style="width:40px;"></th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows}
-          </tbody>
-        </table>
-      `;
-    }
-
-    let workoutsChart = null;
-    let minutesChart = null;
-
-    function renderCharts() {
-      const user = getActiveUser();
-      const series = getLast7DaySeries(user);
-      const workoutsCtx = document.getElementById("workoutsChart").getContext("2d");
-      const minutesCtx = document.getElementById("minutesChart").getContext("2d");
-
-      if (workoutsChart) workoutsChart.destroy();
-      if (minutesChart) minutesChart.destroy();
-
-      workoutsChart = new Chart(workoutsCtx, {
-        type: "bar",
-        data: {
-          labels: series.labels,
-          datasets: [{ label: "Workouts", data: series.workouts }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { precision: 0 },
-            },
-          },
-          plugins: {
-            legend: { display: false },
-          },
-        },
-      });
-
-      minutesChart = new Chart(minutesCtx, {
-        type: "bar",
-        data: {
-          labels: series.labels,
-          datasets: [{ label: "Minutes", data: series.minutes }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { beginAtZero: true },
-          },
-          plugins: {
-            legend: { display: false },
-          },
-        },
-      });
-    }
-
-    function renderEncouragement() {
-      const listEl = document.getElementById("encList");
-      const messages = [...(state.messages || [])];
-
-      if (messages.length === 0) {
-        listEl.innerHTML = `
-          <div class="empty-state" style="padding:0.5rem 0; font-size:0.78rem;">
-            No notes yet. Leave a kind word for each other. 💌
-          </div>
-        `;
-        return;
-      }
-
-      messages.sort((a, b) => {
-        const da = new Date(a.createdAt);
-        const db = new Date(b.createdAt);
-        return db - da;
-      });
-
-      const items = messages
-        .map((m) => {
-          const user = state.users[m.author] || { label: m.author };
-          const when = formatDateTimeShort(m.createdAt);
-          const text = (m.text || "").trim();
-          const safeText = text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
-          return `
-            <div class="enc-item">
-              <div class="enc-meta">
-                <span>${user.label}</span>
-                <span>${when}</span>
-              </div>
-              <div class="enc-text">${safeText}</div>
-            </div>
-          `;
-        })
-        .join("");
-
-      listEl.innerHTML = items;
-    }
-
-        function renderAll() {
-      applyTheme();
-      renderUserToggle();
-      renderGoals();
-      renderSummary();
-      renderStreaksAndBadges();
-      renderEntries();
-      renderCharts();
-      renderEncouragement();
-    }
-
-
-    function setupUserToggle() {
-      const toggle = document.getElementById("userToggle");
-      toggle.addEventListener("click", (e) => {
-        const btn = e.target.closest("button[data-user]");
-        if (!btn) return;
-        const userKey = btn.getAttribute("data-user");
-        if (!state.users[userKey]) return;
-        state.activeUser = userKey;
-        saveState();
-        renderAll();
-      });
-    }
-
-    function setupGoalsEditing() {
-      const editBtn = document.getElementById("editGoalsBtn");
-      const goalsForm = document.getElementById("goalsForm");
-      const saveBtn = document.getElementById("saveGoalsBtn");
-
-      editBtn.addEventListener("click", () => {
-        const visible = goalsForm.style.display === "grid";
-        goalsForm.style.display = visible ? "none" : "grid";
-      });
-
-      saveBtn.addEventListener("click", () => {
-        const workouts = Number(document.getElementById("goalWorkouts").value || 0);
-        const minutes = Number(document.getElementById("goalMinutes").value || 0);
-
-        const user = getActiveUser();
-        user.goals.workoutsPerWeek = Math.max(0, Math.floor(workouts));
-        user.goals.minutesPerWeek = Math.max(0, Math.floor(minutes));
-
-        saveState();
-        renderGoals();
-        renderSummary();
-        renderCharts();
-      });
-    }
-
-    function setupLogForm() {
-      const form = document.getElementById("logForm");
-      const dateInput = document.getElementById("logDate");
-
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-      dateInput.value = `${yyyy}-${mm}-${dd}`;
-
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-
-        const date = dateInput.value;
-        if (!date) return;
-
-        const workouts = Number(document.getElementById("logWorkouts").value || 0);
-        const minutes = Number(document.getElementById("logMinutes").value || 0);
-        const stepsRaw = document.getElementById("logSteps").value.trim();
-        const notes = document.getElementById("logNotes").value.trim();
-
-        const user = getActiveUser();
-        user.entries.push({
-          id: generateEntryId(),
-          date,
-          workouts,
-          minutes,
-          steps: stepsRaw === "" ? null : Number(stepsRaw),
-          notes,
-        });
-
-        saveState();
-        renderSummary();
-        renderEntries();
-        renderCharts();
-
-        document.getElementById("logWorkouts").value = "";
-        document.getElementById("logMinutes").value = "";
-        document.getElementById("logSteps").value = "";
-        document.getElementById("logNotes").value = "";
-      });
-    }
-
-    function setupDeleteHandler() {
-      const container = document.getElementById("entriesContainer");
-      container.addEventListener("click", (e) => {
-        const btn = e.target.closest("button[data-entry-id]");
-        if (!btn) return;
-        const id = btn.getAttribute("data-entry-id");
-        const user = getActiveUser();
-        const idx = user.entries.findIndex((entry) => entry.id === id);
-        if (idx === -1) return;
-
-        const confirmed = window.confirm("Delete this entry?");
-        if (!confirmed) return;
-
-        user.entries.splice(idx, 1);
-        saveState();
-        renderSummary();
-        renderEntries();
-        renderCharts();
-      });
-    }
-
-    function setupEncouragementForm() {
-      const form = document.getElementById("encForm");
-      const textarea = document.getElementById("encText");
-
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const text = textarea.value.trim();
-        if (!text) return;
-
-        const authorKey = getActiveUserKey();
-        state.messages.push({
-          id: generateEntryId(),
-          author: authorKey,
-          text,
-          createdAt: new Date().toISOString(),
-        });
-
-        saveState();
-        textarea.value = "";
-        renderEncouragement();
-      });
-    }
-
-    function setupEditNames() {
-      const btn = document.getElementById("editNamesBtn");
-      btn.addEventListener("click", () => {
-        const currentYou = state.users.you.label || "You";
-        const currentPartner = state.users.partner.label || "Partner";
-
-        const youName = window.prompt("Enter your name:", currentYou);
-        if (youName !== null && youName.trim() !== "") {
-          state.users.you.label = youName.trim();
-        }
-
-        const partnerName = window.prompt(
-          "Enter your partner's name:",
-          currentPartner
-        );
-        if (partnerName !== null && partnerName.trim() !== "") {
-          state.users.partner.label = partnerName.trim();
-        }
-
-        saveState();
-        renderAll();
-      });
-    }
-
-    function setupThemeSelect() {
-      const select = document.getElementById("themeSelect");
-      if (!select) return;
-
-      select.value = state.theme || "midnight";
-
-      select.addEventListener("change", () => {
-        const theme = select.value || "midnight";
-        state.theme = theme;
-        applyTheme();
-        saveState();
-      });
-    }
-
-    function setupServiceWorker() {
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("service-worker.js")
-            .catch((err) => console.error("SW registration failed", err));
-        });
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      applyTheme();
-      setupUserToggle();
-      setupGoalsEditing();
-      setupLogForm();
-      setupDeleteHandler();
-      setupEncouragementForm();
-      setupEditNames();
-      setupThemeSelect();
-      setupServiceWorker();
-      renderAll();
-      setupRealtimeSync();
-    });
-        function getLast7DaySeries(user) {
-      const entries = user.entries || [];
-      const now = new Date();
-      const days = [];
-      ...
-      return {
-        labels: days.map((d) => d.label),
-        workouts,
-        minutes,
-      };
-    }
     function computeStreakInfo(dateSet) {
       if (!dateSet || dateSet.size === 0) {
         return { current: 0, best: 0 };
@@ -1676,6 +1260,54 @@
       },
     ];
 
+    function renderSummary() {
+      const user = getActiveUser();
+      const summaryTitle = document.getElementById("summaryTitle");
+      summaryTitle.textContent = `${user.label}'s last 7 days`;
+
+      const chipsContainer = document.getElementById("summaryChips");
+
+      const activeTotals = getLast7DayTotals(user);
+      const workoutsGoal = user.goals.workoutsPerWeek || 0;
+      const minutesGoal = user.goals.minutesPerWeek || 0;
+
+      chipsContainer.innerHTML = `
+        <div class="chip">
+          <span class="chip-dot"></span>
+          ${activeTotals.workouts} / ${workoutsGoal} workouts
+        </div>
+        <div class="chip">
+          <span class="chip-dot"></span>
+          ${activeTotals.minutes} / ${minutesGoal} min
+        </div>
+        <div class="chip">
+          <span class="chip-dot"></span>
+          Logged on ${activeTotals.days} / 7 days
+        </div>
+      `;
+
+      const coupleRow = document.getElementById("coupleSummaryRow");
+      const youTotals = getLast7DayTotals(state.users.you);
+      const partnerTotals = getLast7DayTotals(state.users.partner);
+      const coupleWorkouts = youTotals.workouts + partnerTotals.workouts;
+      const coupleMinutes = youTotals.minutes + partnerTotals.minutes;
+
+      coupleRow.innerHTML = `
+        <div class="chip">
+          <span class="chip-dot"></span>
+          ${state.users.you.label}: ${youTotals.workouts} w, ${youTotals.minutes} min
+        </div>
+        <div class="chip">
+          <span class="chip-dot"></span>
+          ${state.users.partner.label}: ${partnerTotals.workouts} w, ${partnerTotals.minutes} min
+        </div>
+        <div class="chip">
+          <span class="chip-dot"></span>
+          Together: ${coupleWorkouts} w, ${coupleMinutes} min
+        </div>
+      `;
+    }
+
     function renderStreaksAndBadges() {
       const statsYou = getUserStats(state.users.you);
       const statsPartner = getUserStats(state.users.partner);
@@ -1744,8 +1376,362 @@
         </div>`;
     }
 
+    function renderEntries() {
+      const user = getActiveUser();
+      const container = document.getElementById("entriesContainer");
+      const entries = [...(user.entries || [])];
+
+      entries.sort((a, b) => {
+        const da = new Date(a.date + "T00:00:00");
+        const db = new Date(b.date + "T00:00:00");
+        return db - da;
+      });
+
+      if (entries.length === 0) {
+        container.innerHTML = `<div class="empty-state">
+          No entries yet. Log your first workout and start your streak together. ✨
+        </div>`;
+        return;
+      }
+
+      const rows = entries
+        .map((e) => {
+          const date = formatDate(e.date);
+          const workouts = e.workouts || 0;
+          const minutes = e.minutes || 0;
+          const steps = e.steps ?? "";
+          const notes = e.notes || "";
+          const safeTitle = String(notes).replace(/"/g, "&quot;");
+          return `
+            <tr>
+              <td>${date}</td>
+              <td>${workouts}</td>
+              <td>${minutes}</td>
+              <td>${steps === null ? "" : steps}</td>
+              <td class="note-cell" title="${safeTitle}">
+                ${notes || "<span style='color:var(--text-soft);'>—</span>"}
+              </td>
+              <td style="text-align:right;">
+                <button type="button" class="btn-icon" data-entry-id="${e.id}">
+                  🗑
+                </button>
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th style="width:70px;">Date</th>
+              <th style="width:60px;">Workouts</th>
+              <th style="width:80px;">Minutes</th>
+              <th style="width:80px;">Steps</th>
+              <th>Notes</th>
+              <th style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      `;
+    }
+
+    let workoutsChart = null;
+    let minutesChart = null;
+
+    function renderCharts() {
+      const user = getActiveUser();
+      const series = getLast7DaySeries(user);
+      const workoutsCtx = document.getElementById("workoutsChart").getContext("2d");
+      const minutesCtx = document.getElementById("minutesChart").getContext("2d");
+
+      if (workoutsChart) workoutsChart.destroy();
+      if (minutesChart) minutesChart.destroy();
+
+      workoutsChart = new Chart(workoutsCtx, {
+        type: "bar",
+        data: {
+          labels: series.labels,
+          datasets: [{ label: "Workouts", data: series.workouts }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0 },
+            },
+          },
+          plugins: {
+            legend: { display: false },
+          },
+        },
+      });
+
+      minutesChart = new Chart(minutesCtx, {
+        type: "bar",
+        data: {
+          labels: series.labels,
+          datasets: [{ label: "Minutes", data: series.minutes }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true },
+          },
+          plugins: {
+            legend: { display: false },
+          },
+        },
+      });
+    }
+
+    function renderEncouragement() {
+      const listEl = document.getElementById("encList");
+      const messages = [...(state.messages || [])];
+
+      if (messages.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-state" style="padding:0.5rem 0; font-size:0.78rem;">
+            No notes yet. Leave a kind word for each other. 💌
+          </div>
+        `;
+        return;
+      }
+
+      messages.sort((a, b) => {
+        const da = new Date(a.createdAt);
+        const db = new Date(b.createdAt);
+        return db - da;
+      });
+
+      const items = messages
+        .map((m) => {
+          const user = state.users[m.author] || { label: m.author };
+          const when = formatDateTimeShort(m.createdAt);
+          const text = (m.text || "").trim();
+          const safeText = text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+          return `
+            <div class="enc-item">
+              <div class="enc-meta">
+                <span>${user.label}</span>
+                <span>${when}</span>
+              </div>
+              <div class="enc-text">${safeText}</div>
+            </div>
+          `;
+        })
+        .join("");
+
+      listEl.innerHTML = items;
+    }
+
+    function renderAll() {
+      applyTheme();
+      renderUserToggle();
+      renderGoals();
+      renderSummary();
+      renderStreaksAndBadges();
+      renderEntries();
+      renderCharts();
+      renderEncouragement();
+    }
+
+    function setupUserToggle() {
+      const toggle = document.getElementById("userToggle");
+      toggle.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-user]");
+        if (!btn) return;
+        const userKey = btn.getAttribute("data-user");
+        if (!state.users[userKey]) return;
+        state.activeUser = userKey;
+        saveState();
+        renderAll();
+      });
+    }
+
+    function setupGoalsEditing() {
+      const editBtn = document.getElementById("editGoalsBtn");
+      const goalsForm = document.getElementById("goalsForm");
+      const saveBtn = document.getElementById("saveGoalsBtn");
+
+      editBtn.addEventListener("click", () => {
+        const visible = goalsForm.style.display === "grid";
+        goalsForm.style.display = visible ? "none" : "grid";
+      });
+
+      saveBtn.addEventListener("click", () => {
+        const workouts = Number(document.getElementById("goalWorkouts").value || 0);
+        const minutes = Number(document.getElementById("goalMinutes").value || 0);
+
+        const user = getActiveUser();
+        user.goals.workoutsPerWeek = Math.max(0, Math.floor(workouts));
+        user.goals.minutesPerWeek = Math.max(0, Math.floor(minutes));
+
+        saveState();
+        renderGoals();
+        renderSummary();
+        renderCharts();
+      });
+    }
+
+    function setupLogForm() {
+      const form = document.getElementById("logForm");
+      const dateInput = document.getElementById("logDate");
+
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const date = dateInput.value;
+        if (!date) return;
+
+        const workouts = Number(document.getElementById("logWorkouts").value || 0);
+        const minutes = Number(document.getElementById("logMinutes").value || 0);
+        const stepsRaw = document.getElementById("logSteps").value.trim();
+        const notes = document.getElementById("logNotes").value.trim();
+
+        const user = getActiveUser();
+        user.entries.push({
+          id: generateEntryId(),
+          date,
+          workouts,
+          minutes,
+          steps: stepsRaw === "" ? null : Number(stepsRaw),
+          notes,
+        });
+
+        saveState();
+        renderSummary();
+        renderEntries();
+        renderCharts();
+
+        document.getElementById("logWorkouts").value = "";
+        document.getElementById("logMinutes").value = "";
+        document.getElementById("logSteps").value = "";
+        document.getElementById("logNotes").value = "";
+      });
+    }
+
+    function setupDeleteHandler() {
+      const container = document.getElementById("entriesContainer");
+      container.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-entry-id]");
+        if (!btn) return;
+        const id = btn.getAttribute("data-entry-id");
+        const user = getActiveUser();
+        const idx = user.entries.findIndex((entry) => entry.id === id);
+        if (idx === -1) return;
+
+        const confirmed = window.confirm("Delete this entry?");
+        if (!confirmed) return;
+
+        user.entries.splice(idx, 1);
+        saveState();
+        renderSummary();
+        renderEntries();
+        renderCharts();
+      });
+    }
+
+    function setupEncouragementForm() {
+      const form = document.getElementById("encForm");
+      const textarea = document.getElementById("encText");
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const text = textarea.value.trim();
+        if (!text) return;
+
+        const authorKey = getActiveUserKey();
+        state.messages.push({
+          id: generateEntryId(),
+          author: authorKey,
+          text,
+          createdAt: new Date().toISOString(),
+        });
+
+        saveState();
+        textarea.value = "";
+        renderEncouragement();
+      });
+    }
+
+    function setupEditNames() {
+      const btn = document.getElementById("editNamesBtn");
+      btn.addEventListener("click", () => {
+        const currentYou = state.users.you.label || "You";
+        const currentPartner = state.users.partner.label || "Partner";
+
+        const youName = window.prompt("Enter your name:", currentYou);
+        if (youName !== null && youName.trim() !== "") {
+          state.users.you.label = youName.trim();
+        }
+
+        const partnerName = window.prompt(
+          "Enter your partner's name:",
+          currentPartner
+        );
+        if (partnerName !== null && partnerName.trim() !== "") {
+          state.users.partner.label = partnerName.trim();
+        }
+
+        saveState();
+        renderAll();
+      });
+    }
+
+    function setupThemeSelect() {
+      const select = document.getElementById("themeSelect");
+      if (!select) return;
+
+      select.value = state.theme || "midnight";
+
+      select.addEventListener("change", () => {
+        const theme = select.value || "midnight";
+        state.theme = theme;
+        applyTheme();
+        saveState();
+      });
+    }
+
+    function setupServiceWorker() {
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("service-worker.js")
+            .catch((err) => console.error("SW registration failed", err));
+        });
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme();
+      setupUserToggle();
+      setupGoalsEditing();
+      setupLogForm();
+      setupDeleteHandler();
+      setupEncouragementForm();
+      setupEditNames();
+      setupThemeSelect();
+      setupServiceWorker();
+      renderAll();
+      setupRealtimeSync();
+    });
   </script>
 </body>
 </html>
-
-
