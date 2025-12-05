@@ -1671,7 +1671,7 @@
       });
     }
 
-    function setupLogForm() {
+        function setupLogForm() {
       const form = document.getElementById("logForm");
       const dateInput = document.getElementById("logDate");
 
@@ -1716,19 +1716,8 @@
         document.getElementById("logSteps").value = "";
         document.getElementById("logNotes").value = "";
       });
-
-
-        saveState();
-        renderSummary();
-        renderEntries();
-        renderCharts();
-
-        document.getElementById("logWorkouts").value = "";
-        document.getElementById("logMinutes").value = "";
-        document.getElementById("logSteps").value = "";
-        document.getElementById("logNotes").value = "";
-      });
     }
+
 
     function setupDeleteHandler() {
       const container = document.getElementById("entriesContainer");
@@ -1838,4 +1827,5 @@
   </script>
 </body>
 </html>
+
 
