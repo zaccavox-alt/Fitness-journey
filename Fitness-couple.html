@@ -645,7 +645,7 @@
           <small>Add your workout or activity for any day.</small>
         </div>
 
-        <form id="logForm">
+                <form id="logForm">
           <label>
             Date
             <input type="date" id="logDate" required />
@@ -662,9 +662,23 @@
           </label>
 
           <label>
+            Workout type
+            <select id="logType">
+              <option value="">Choose type…</option>
+              <option value="Cardio">Cardio</option>
+              <option value="Strength">Strength</option>
+              <option value="Walk">Walk</option>
+              <option value="Stretch">Stretch</option>
+              <option value="Yoga">Yoga</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+
+          <label>
             Steps (optional)
             <input type="number" min="0" id="logSteps" placeholder="e.g. 8000" />
           </label>
+
 
           <label class="form-full">
             Notes (how did it feel?)
@@ -1136,12 +1150,37 @@
       let totalWorkouts = 0;
       let totalMinutes = 0;
 
+      const byType = {
+        cardio: 0,
+        strength: 0,
+        walk: 0,
+        stretch: 0,
+        yoga: 0,
+        other: 0,
+      };
+
       entries.forEach((e) => {
         if (!e.date) return;
         const key = e.date;
         dateSet.add(key);
-        totalWorkouts += Number(e.workouts || 0);
-        totalMinutes += Number(e.minutes || 0);
+        const w = Number(e.workouts || 0);
+        const m = Number(e.minutes || 0);
+        totalWorkouts += w;
+        totalMinutes += m;
+
+        // Normalize workout type for counting
+        let t = (e.type || "").toLowerCase();
+        if (t.includes("cardio")) t = "cardio";
+        else if (t.includes("strength")) t = "strength";
+        else if (t.includes("walk")) t = "walk";
+        else if (t.includes("stretch")) t = "stretch";
+        else if (t.includes("yoga")) t = "yoga";
+        else t = "other";
+
+        // Count this entry as 1 "session" if they did anything
+        if (w > 0 || m > 0) {
+          byType[t] += 1;
+        }
       });
 
       const streak = computeStreakInfo(dateSet);
@@ -1164,12 +1203,14 @@
         totalWorkouts,
         totalMinutes,
         dateSet,
+        byType,
         streakCurrent: streak.current,
         streakBest: streak.best,
         activeDays30,
         last7,
       };
     }
+
 
     function getCoupleStreak(statsYou, statsPartner) {
       const both = new Set();
@@ -1181,7 +1222,7 @@
       return computeStreakInfo(both);
     }
 
-    const BADGE_DEFS = [
+        const BADGE_DEFS = [
       {
         id: "first_workout",
         scope: "user",
@@ -1217,6 +1258,38 @@
         icon: "⏱️",
         test: (stats) => stats.totalMinutes >= 1000,
       },
+
+      // 🆕 Type-based user badges
+      {
+        id: "cardio_kickoff",
+        scope: "user",
+        label: "Cardio Kickoff",
+        icon: "🏃",
+        test: (stats) => (stats.byType?.cardio || 0) >= 3,
+      },
+      {
+        id: "strength_starter",
+        scope: "user",
+        label: "Strength Starter",
+        icon: "🏋️",
+        test: (stats) => (stats.byType?.strength || 0) >= 3,
+      },
+      {
+        id: "walk_hero",
+        scope: "user",
+        label: "Walk Hero",
+        icon: "🚶",
+        test: (stats) => (stats.byType?.walk || 0) >= 5,
+      },
+      {
+        id: "flexible_friend",
+        scope: "user",
+        label: "Flexible Friend",
+        icon: "🤸",
+        test: (stats) => (stats.byType?.stretch || 0) + (stats.byType?.yoga || 0) >= 5,
+      },
+
+      // Couple badges
       {
         id: "couple_same_day",
         scope: "couple",
@@ -1258,7 +1331,16 @@
         test: (youStats, partnerStats) =>
           youStats.totalWorkouts + partnerStats.totalWorkouts >= 20,
       },
+      {
+        id: "cardio_duo",
+        scope: "couple",
+        label: "Cardio Duo",
+        icon: "💓",
+        test: (youStats, partnerStats) =>
+          (youStats.byType?.cardio || 0) + (partnerStats.byType?.cardio || 0) >= 8,
+      },
     ];
+
 
     function renderSummary() {
       const user = getActiveUser();
@@ -1400,11 +1482,13 @@
           const workouts = e.workouts || 0;
           const minutes = e.minutes || 0;
           const steps = e.steps ?? "";
+          const type = e.type || "—";
           const notes = e.notes || "";
           const safeTitle = String(notes).replace(/"/g, "&quot;");
           return `
             <tr>
               <td>${date}</td>
+              <td>${type}</td>
               <td>${workouts}</td>
               <td>${minutes}</td>
               <td>${steps === null ? "" : steps}</td>
@@ -1419,13 +1503,15 @@
             </tr>
           `;
         })
+
         .join("");
 
-      container.innerHTML = `
+            container.innerHTML = `
         <table>
           <thead>
             <tr>
               <th style="width:70px;">Date</th>
+              <th style="width:80px;">Type</th>
               <th style="width:60px;">Workouts</th>
               <th style="width:80px;">Minutes</th>
               <th style="width:80px;">Steps</th>
@@ -1433,6 +1519,7 @@
               <th style="width:40px;"></th>
             </tr>
           </thead>
+
           <tbody>
             ${rows}
           </tbody>
@@ -1602,6 +1689,8 @@
 
         const workouts = Number(document.getElementById("logWorkouts").value || 0);
         const minutes = Number(document.getElementById("logMinutes").value || 0);
+        const typeRaw = document.getElementById("logType").value;
+        const type = typeRaw && typeRaw.trim() !== "" ? typeRaw.trim() : "Other";
         const stepsRaw = document.getElementById("logSteps").value.trim();
         const notes = document.getElementById("logNotes").value.trim();
 
@@ -1611,9 +1700,23 @@
           date,
           workouts,
           minutes,
+          type,
           steps: stepsRaw === "" ? null : Number(stepsRaw),
           notes,
         });
+
+        saveState();
+        renderSummary();
+        renderEntries();
+        renderCharts();
+
+        document.getElementById("logWorkouts").value = "";
+        document.getElementById("logMinutes").value = "";
+        document.getElementById("logType").value = "";
+        document.getElementById("logSteps").value = "";
+        document.getElementById("logNotes").value = "";
+      });
+
 
         saveState();
         renderSummary();
@@ -1735,3 +1838,4 @@
   </script>
 </body>
 </html>
+
