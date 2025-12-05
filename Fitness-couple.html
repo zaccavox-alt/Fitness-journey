@@ -470,6 +470,36 @@
       color: var(--text-soft);
       font-size: 0.8rem;
     }
+    .badge-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+    }
+
+    .badge {
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid var(--border-strong);
+      background: var(--chip-bg);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge.locked {
+      opacity: 0.4;
+      border-style: dashed;
+    }
+
+    .badge-icon {
+      font-size: 0.85rem;
+    }
+
+    .badge-label {
+      font-weight: 500;
+    }
 
     /* Encouragement board */
     .encouragement {
@@ -658,7 +688,12 @@
         <div class="summary-heading">Couple summary (last 7 days)</div>
         <div class="summary-row" id="coupleSummaryRow"></div>
 
+        <div class="summary-heading" style="margin-top:0.6rem;">Streaks & badges</div>
+        <div class="summary-row" id="streakRow"></div>
+        <div class="badge-grid" id="badgeGrid"></div>
+
         <div class="charts">
+
           <div class="chart-card">
             <div class="chart-card-title">Workouts (last 7 days)</div>
             <div class="chart-wrapper">
@@ -1443,3 +1478,4 @@
   </script>
 </body>
 </html>
+
