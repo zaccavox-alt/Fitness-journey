@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="midnight">
 <head>
   <meta charset="UTF-8" />
   <title>Our Fitness Journey</title>
@@ -9,7 +9,88 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon-192.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
+
   <style>
+    :root {
+      /* default (midnight) theme values */
+      --bg-body-from: #1e293b;
+      --bg-body-to: #020617;
+      --bg-app: rgba(15, 23, 42, 0.96);
+      --bg-card-from: rgba(30, 64, 175, 0.4);
+      --bg-card-to: rgba(15, 23, 42, 0.96);
+
+      --accent-1: #22c55e;
+      --accent-2: #0ea5e9;
+
+      --pill-bg: rgba(15, 118, 110, 0.1);
+      --pill-border: rgba(45, 212, 191, 0.4);
+      --pill-text: #6ee7b7;
+
+      --border-strong: rgba(148, 163, 184, 0.4);
+      --border-soft: rgba(148, 163, 184, 0.25);
+
+      --danger-bg-hover: rgba(127, 29, 29, 0.9);
+      --danger-border: rgba(248, 113, 113, 0.9);
+
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --text-soft: #6b7280;
+
+      --chip-bg: rgba(15, 23, 42, 0.9);
+      --card-inner-bg: rgba(15, 23, 42, 0.9);
+      --table-header-bg: rgba(15, 23, 42, 0.98);
+      --table-row-odd: rgba(15, 23, 42, 0.96);
+      --table-row-even: rgba(15, 23, 42, 0.9);
+    }
+
+    /* Forest theme */
+    :root[data-theme="forest"] {
+      --bg-body-from: #022c22;
+      --bg-body-to: #020617;
+      --bg-card-from: rgba(22, 101, 52, 0.4);
+      --bg-card-to: rgba(6, 78, 59, 0.96);
+
+      --accent-1: #22c55e;
+      --accent-2: #14b8a6;
+
+      --pill-bg: rgba(21, 128, 61, 0.15);
+      --pill-border: rgba(74, 222, 128, 0.5);
+      --pill-text: #bbf7d0;
+
+      --border-strong: rgba(52, 211, 153, 0.45);
+      --border-soft: rgba(34, 197, 94, 0.25);
+
+      --chip-bg: rgba(6, 78, 59, 0.95);
+      --card-inner-bg: rgba(6, 78, 59, 0.95);
+      --table-header-bg: rgba(6, 78, 59, 0.98);
+      --table-row-odd: rgba(6, 78, 59, 0.96);
+      --table-row-even: rgba(6, 78, 59, 0.9);
+    }
+
+    /* Sunset theme */
+    :root[data-theme="sunset"] {
+      --bg-body-from: #4c1d95;
+      --bg-body-to: #020617;
+      --bg-card-from: rgba(192, 38, 211, 0.35);
+      --bg-card-to: rgba(76, 29, 149, 0.96);
+
+      --accent-1: #fb7185;
+      --accent-2: #f97316;
+
+      --pill-bg: rgba(251, 113, 133, 0.16);
+      --pill-border: rgba(249, 115, 22, 0.5);
+      --pill-text: #fed7aa;
+
+      --border-strong: rgba(216, 180, 254, 0.45);
+      --border-soft: rgba(147, 51, 234, 0.25);
+
+      --chip-bg: rgba(76, 29, 149, 0.95);
+      --card-inner-bg: rgba(76, 29, 149, 0.95);
+      --table-header-bg: rgba(76, 29, 149, 0.98);
+      --table-row-odd: rgba(76, 29, 149, 0.96);
+      --table-row-even: rgba(76, 29, 149, 0.9);
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -22,19 +103,19 @@
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      background: radial-gradient(circle at top left, #1e293b, #020617);
-      color: #e5e7eb;
+      background: radial-gradient(circle at top left, var(--bg-body-from), var(--bg-body-to));
+      color: var(--text-main);
       padding: 1rem;
     }
 
     .app {
       width: 100%;
       max-width: 900px;
-      background: rgba(15, 23, 42, 0.96);
+      background: var(--bg-app);
       border-radius: 1.5rem;
       padding: 1.5rem;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(148, 163, 184, 0.25);
+      border: 1px solid var(--border-soft);
     }
 
     header {
@@ -53,7 +134,7 @@
 
     .subtitle {
       font-size: 0.9rem;
-      color: #9ca3af;
+      color: var(--text-muted);
     }
 
     .pill {
@@ -62,18 +143,18 @@
       gap: 0.5rem;
       padding: 0.35rem 0.8rem;
       border-radius: 999px;
-      background: rgba(15, 118, 110, 0.1);
-      color: #6ee7b7;
+      background: var(--pill-bg);
+      color: var(--pill-text);
       font-size: 0.75rem;
-      border: 1px solid rgba(45, 212, 191, 0.4);
+      border: 1px solid var(--pill-border);
     }
 
     .pill-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: #22c55e;
-      box-shadow: 0 0 6px #22c55e;
+      background: var(--accent-1);
+      box-shadow: 0 0 6px var(--accent-1);
     }
 
     .user-toggle {
@@ -81,7 +162,7 @@
       background: rgba(15, 23, 42, 0.9);
       border-radius: 999px;
       padding: 0.25rem;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid var(--border-strong);
     }
 
     .user-toggle button {
@@ -91,13 +172,13 @@
       font-size: 0.85rem;
       cursor: pointer;
       background: transparent;
-      color: #9ca3af;
+      color: var(--text-muted);
       transition: all 0.16s ease-out;
       white-space: nowrap;
     }
 
     .user-toggle button.active {
-      background: linear-gradient(135deg, #22c55e, #0ea5e9);
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
       color: #020617;
       font-weight: 600;
       box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.7);
@@ -116,10 +197,10 @@
     }
 
     .card {
-      background: radial-gradient(circle at top left, rgba(30, 64, 175, 0.4), rgba(15, 23, 42, 0.96));
+      background: radial-gradient(circle at top left, var(--bg-card-from), var(--bg-card-to));
       border-radius: 1.25rem;
       padding: 1.1rem;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid var(--border-strong);
     }
 
     .card h2 {
@@ -128,7 +209,7 @@
     }
 
     .card small {
-      color: #9ca3af;
+      color: var(--text-muted);
       font-size: 0.8rem;
     }
 
@@ -143,15 +224,15 @@
     .goal-pill {
       flex: 1;
       min-width: 120px;
-      background: rgba(15, 23, 42, 0.9);
+      background: var(--card-inner-bg);
       border-radius: 0.9rem;
       padding: 0.7rem 0.8rem;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid var(--border-strong);
       font-size: 0.8rem;
     }
 
     .goal-label {
-      color: #9ca3af;
+      color: var(--text-muted);
       font-size: 0.75rem;
     }
 
@@ -180,15 +261,17 @@
       flex-direction: column;
       gap: 0.25rem;
       font-size: 0.8rem;
-      color: #9ca3af;
+      color: var(--text-muted);
     }
 
-    input, textarea, select {
+    input,
+    textarea,
+    select {
       background: rgba(15, 23, 42, 0.96);
       border-radius: 0.7rem;
       border: 1px solid rgba(148, 163, 184, 0.6);
       padding: 0.4rem 0.65rem;
-      color: #e5e7eb;
+      color: var(--text-main);
       font-size: 0.85rem;
     }
 
@@ -197,9 +280,11 @@
       min-height: 60px;
     }
 
-    input:focus, textarea:focus, select:focus {
+    input:focus,
+    textarea:focus,
+    select:focus {
       outline: none;
-      border-color: #22c55e;
+      border-color: var(--accent-1);
       box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
     }
 
@@ -214,7 +299,7 @@
       border-radius: 999px;
       border: none;
       cursor: pointer;
-      background: linear-gradient(135deg, #22c55e, #0ea5e9);
+      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
       color: #020617;
       font-weight: 600;
       font-size: 0.9rem;
@@ -235,7 +320,7 @@
       border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.7);
       background: rgba(15, 23, 42, 0.9);
-      color: #e5e7eb;
+      color: var(--text-main);
       font-size: 0.75rem;
       cursor: pointer;
       display: inline-flex;
@@ -262,8 +347,8 @@
     }
 
     .btn-icon:hover {
-      background: rgba(127, 29, 29, 0.9);
-      border-color: rgba(248, 113, 113, 0.9);
+      background: var(--danger-bg-hover);
+      border-color: var(--danger-border);
     }
 
     .summary-row {
@@ -276,15 +361,15 @@
     .summary-heading {
       margin-top: 0.6rem;
       font-size: 0.78rem;
-      color: #9ca3af;
+      color: var(--text-muted);
     }
 
     .chip {
-      background: rgba(15, 23, 42, 0.9);
+      background: var(--chip-bg);
       border-radius: 999px;
       padding: 0.25rem 0.7rem;
       font-size: 0.75rem;
-      border: 1px solid rgba(148, 163, 184, 0.5);
+      border: 1px solid var(--border-strong);
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
@@ -294,7 +379,7 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #22c55e;
+      background: var(--accent-1);
     }
 
     .charts {
@@ -311,15 +396,15 @@
     }
 
     .chart-card {
-      background: rgba(15, 23, 42, 0.9);
+      background: var(--card-inner-bg);
       border-radius: 0.9rem;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid var(--border-strong);
       padding: 0.5rem 0.6rem 0.8rem;
     }
 
     .chart-card-title {
       font-size: 0.78rem;
-      color: #9ca3af;
+      color: var(--text-muted);
       margin-bottom: 0.25rem;
     }
 
@@ -334,8 +419,8 @@
       max-height: 220px;
       overflow-y: auto;
       border-radius: 0.9rem;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border-strong);
+      background: var(--card-inner-bg);
     }
 
     table {
@@ -347,28 +432,29 @@
     thead {
       position: sticky;
       top: 0;
-      background: rgba(15, 23, 42, 0.98);
+      background: var(--table-header-bg);
       z-index: 1;
     }
 
-    th, td {
+    th,
+    td {
       padding: 0.45rem 0.6rem;
       text-align: left;
       border-bottom: 1px solid rgba(31, 41, 55, 0.9);
     }
 
     th {
-      color: #9ca3af;
+      color: var(--text-muted);
       font-weight: 500;
       font-size: 0.75rem;
     }
 
     tbody tr:nth-child(odd) {
-      background: rgba(15, 23, 42, 0.96);
+      background: var(--table-row-odd);
     }
 
     tbody tr:nth-child(even) {
-      background: rgba(15, 23, 42, 0.9);
+      background: var(--table-row-even);
     }
 
     .note-cell {
@@ -381,12 +467,11 @@
     .empty-state {
       padding: 0.8rem;
       text-align: center;
-      color: #6b7280;
+      color: var(--text-soft);
       font-size: 0.8rem;
     }
 
     /* Encouragement board */
-
     .encouragement {
       margin-top: 0.9rem;
       padding-top: 0.7rem;
@@ -407,7 +492,7 @@
 
     .enc-header small {
       font-size: 0.75rem;
-      color: #9ca3af;
+      color: var(--text-muted);
     }
 
     #encForm {
@@ -441,8 +526,8 @@
     .enc-item {
       padding: 0.5rem 0.6rem;
       border-radius: 0.7rem;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: var(--card-inner-bg);
+      border: 1px solid var(--border-strong);
     }
 
     .enc-meta {
@@ -450,7 +535,7 @@
       justify-content: space-between;
       gap: 0.4rem;
       font-size: 0.7rem;
-      color: #9ca3af;
+      color: var(--text-muted);
       margin-bottom: 0.2rem;
     }
 
@@ -460,7 +545,7 @@
     }
   </style>
 
-  <!-- Firebase (compat SDKs for simple usage from CDN) -->
+  <!-- Firebase (compat SDKs) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
@@ -480,9 +565,16 @@
           <button data-user="you" class="active">You</button>
           <button data-user="partner">Partner</button>
         </div>
-        <button id="editNamesBtn" class="btn-small" type="button">
-          ✏️ Edit names
-        </button>
+        <div style="display:flex; gap:0.35rem; margin-top:0.2rem;">
+          <button id="editNamesBtn" class="btn-small" type="button">
+            ✏️ Names
+          </button>
+          <select id="themeSelect" class="btn-small" style="padding-right:1.5rem;">
+            <option value="midnight">🌙 Midnight</option>
+            <option value="forest">🌲 Forest</option>
+            <option value="sunset">🌅 Sunset</option>
+          </select>
+        </div>
       </div>
     </header>
 
@@ -499,9 +591,7 @@
           </button>
         </div>
 
-        <div class="goals-row" id="goalsDisplay">
-          <!-- Filled by JS -->
-        </div>
+        <div class="goals-row" id="goalsDisplay"></div>
 
         <form id="goalsForm" style="display:none; margin-bottom:0.6rem;">
           <label>
@@ -563,14 +653,10 @@
           <small>Last 7 days for the selected person.</small>
         </div>
 
-        <div class="summary-row" id="summaryChips">
-          <!-- Filled by JS -->
-        </div>
+        <div class="summary-row" id="summaryChips"></div>
 
         <div class="summary-heading">Couple summary (last 7 days)</div>
-        <div class="summary-row" id="coupleSummaryRow">
-          <!-- Filled by JS -->
-        </div>
+        <div class="summary-row" id="coupleSummaryRow"></div>
 
         <div class="charts">
           <div class="chart-card">
@@ -587,9 +673,7 @@
           </div>
         </div>
 
-        <div class="entries-list" id="entriesContainer">
-          <!-- Table inserted by JS -->
-        </div>
+        <div class="entries-list" id="entriesContainer"></div>
 
         <div class="encouragement">
           <div class="enc-header">
@@ -605,9 +689,7 @@
               💌 Add note
             </button>
           </form>
-          <div class="enc-list" id="encList">
-            <!-- Encouragement messages -->
-          </div>
+          <div class="enc-list" id="encList"></div>
         </div>
       </section>
     </div>
@@ -620,8 +702,7 @@
     const APP_KEY = "couple_fitness_v1";
     const ROOM_KEY = "couple_fitness_room_id";
 
-    // 🔐 1) PASTE YOUR FIREBASE CONFIG HERE
-    // Replace the placeholder strings with the values from Firebase console.
+    // 🔐 PASTE YOUR REAL FIREBASE CONFIG VALUES HERE
     const FIREBASE_CONFIG = {
       apiKey: "AIzaSyBftBxf5k7Nf0n2LnXUGNn2jK9clCejpuQ",
       authDomain: "fitness-journey-46e01.firebaseapp.com",
@@ -651,6 +732,7 @@
 
     const defaultState = {
       activeUser: "you",
+      theme: "midnight",
       users: {
         you: {
           label: "You",
@@ -702,6 +784,8 @@
 
     function addMissingEntryIdsAndLabels(stateObj) {
       if (!stateObj.users) stateObj.users = {};
+      if (!stateObj.theme) stateObj.theme = "midnight";
+
       ensureUserShape(stateObj, "you", "You");
       ensureUserShape(stateObj, "partner", "Partner");
 
@@ -728,9 +812,7 @@
           return clone;
         }
         const parsed = JSON.parse(stored);
-        if (!parsed.users) {
-          parsed.users = {};
-        }
+        if (!parsed.users) parsed.users = {};
         if (!parsed.messages) parsed.messages = [];
         addMissingEntryIdsAndLabels(parsed);
         return parsed;
@@ -770,10 +852,12 @@
       };
 
       suppressRemote = true;
-      docRef.set(payload).catch((err) => {
-        suppressRemote = false;
-        console.error("Failed to sync to cloud", err);
-      });
+      docRef
+        .set(payload)
+        .catch((err) => {
+          suppressRemote = false;
+          console.error("Failed to sync to cloud", err);
+        });
     }
 
     function setupRealtimeSync() {
@@ -781,7 +865,6 @@
       const roomId = getRoomId();
       const docRef = db.collection("rooms").doc(roomId);
 
-      // Initial load from cloud (if exists)
       docRef
         .get()
         .then((doc) => {
@@ -791,16 +874,15 @@
               state = data.state;
               addMissingEntryIdsAndLabels(state);
               saveState(true);
+              applyTheme();
               renderAll();
             }
           } else {
-            // If no doc yet, push our current local state
             saveState(false);
           }
         })
         .catch((err) => console.error("Initial sync load failed", err));
 
-      // Realtime updates
       docRef.onSnapshot((snapshot) => {
         const data = snapshot.data();
         if (!data || !data.state) return;
@@ -811,12 +893,13 @@
         state = data.state;
         addMissingEntryIdsAndLabels(state);
         saveState(true);
+        applyTheme();
         renderAll();
       });
     }
 
     function getActiveUserKey() {
-      return state.activeUser;
+      return state.activeUser || "you";
     }
 
     function getActiveUser() {
@@ -842,6 +925,15 @@
         minute: "2-digit",
       });
       return `${date}, ${time}`;
+    }
+
+    function applyTheme() {
+      const theme = state.theme || "midnight";
+      document.documentElement.setAttribute("data-theme", theme);
+      const select = document.getElementById("themeSelect");
+      if (select) {
+        select.value = theme;
+      }
     }
 
     function renderUserToggle() {
@@ -883,7 +975,7 @@
       const entries = user.entries || [];
       const now = new Date();
       const sevenDaysAgo = new Date(now);
-      sevenDaysAgo.setDate(now.getDate() - 6); // include today
+      sevenDaysAgo.setDate(now.getDate() - 6);
 
       let totalWorkouts = 0;
       let totalMinutes = 0;
@@ -926,17 +1018,17 @@
         days.push({ key, label });
       }
 
-      const workouts = days.map((day) => {
-        return entries
+      const workouts = days.map((day) =>
+        entries
           .filter((e) => e.date === day.key)
-          .reduce((sum, e) => sum + Number(e.workouts || 0), 0);
-      });
+          .reduce((sum, e) => sum + Number(e.workouts || 0), 0)
+      );
 
-      const minutes = days.map((day) => {
-        return entries
+      const minutes = days.map((day) =>
+        entries
           .filter((e) => e.date === day.key)
-          .reduce((sum, e) => sum + Number(e.minutes || 0), 0);
-      });
+          .reduce((sum, e) => sum + Number(e.minutes || 0), 0)
+      );
 
       return {
         labels: days.map((d) => d.label),
@@ -1011,7 +1103,7 @@
         return;
       }
 
-      let rows = entries
+      const rows = entries
         .map((e) => {
           const date = formatDate(e.date);
           const workouts = e.workouts || 0;
@@ -1020,21 +1112,21 @@
           const notes = e.notes || "";
           const safeTitle = String(notes).replace(/"/g, "&quot;");
           return `
-          <tr>
-            <td>${date}</td>
-            <td>${workouts}</td>
-            <td>${minutes}</td>
-            <td>${steps === null ? "" : steps}</td>
-            <td class="note-cell" title="${safeTitle}">
-              ${notes || "<span style='color:#6b7280;'>—</span>"}
-            </td>
-            <td style="text-align:right;">
-              <button type="button" class="btn-icon" data-entry-id="${e.id}">
-                🗑
-              </button>
-            </td>
-          </tr>
-        `;
+            <tr>
+              <td>${date}</td>
+              <td>${workouts}</td>
+              <td>${minutes}</td>
+              <td>${steps === null ? "" : steps}</td>
+              <td class="note-cell" title="${safeTitle}">
+                ${notes || "<span style='color:var(--text-soft);'>—</span>"}
+              </td>
+              <td style="text-align:right;">
+                <button type="button" class="btn-icon" data-entry-id="${e.id}">
+                  🗑
+                </button>
+              </td>
+            </tr>
+          `;
         })
         .join("");
 
@@ -1063,30 +1155,17 @@
     function renderCharts() {
       const user = getActiveUser();
       const series = getLast7DaySeries(user);
-      const workoutsCtx = document
-        .getElementById("workoutsChart")
-        .getContext("2d");
-      const minutesCtx = document
-        .getElementById("minutesChart")
-        .getContext("2d");
+      const workoutsCtx = document.getElementById("workoutsChart").getContext("2d");
+      const minutesCtx = document.getElementById("minutesChart").getContext("2d");
 
-      if (workoutsChart) {
-        workoutsChart.destroy();
-      }
-      if (minutesChart) {
-        minutesChart.destroy();
-      }
+      if (workoutsChart) workoutsChart.destroy();
+      if (minutesChart) minutesChart.destroy();
 
       workoutsChart = new Chart(workoutsCtx, {
         type: "bar",
         data: {
           labels: series.labels,
-          datasets: [
-            {
-              label: "Workouts",
-              data: series.workouts,
-            },
-          ],
+          datasets: [{ label: "Workouts", data: series.workouts }],
         },
         options: {
           responsive: true,
@@ -1094,15 +1173,11 @@
           scales: {
             y: {
               beginAtZero: true,
-              ticks: {
-                precision: 0,
-              },
+              ticks: { precision: 0 },
             },
           },
           plugins: {
-            legend: {
-              display: false,
-            },
+            legend: { display: false },
           },
         },
       });
@@ -1111,25 +1186,16 @@
         type: "bar",
         data: {
           labels: series.labels,
-          datasets: [
-            {
-              label: "Minutes",
-              data: series.minutes,
-            },
-          ],
+          datasets: [{ label: "Minutes", data: series.minutes }],
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            y: {
-              beginAtZero: true,
-            },
+            y: { beginAtZero: true },
           },
           plugins: {
-            legend: {
-              display: false,
-            },
+            legend: { display: false },
           },
         },
       });
@@ -1151,7 +1217,7 @@
       messages.sort((a, b) => {
         const da = new Date(a.createdAt);
         const db = new Date(b.createdAt);
-        return db - da; // newest first
+        return db - da;
       });
 
       const items = messages
@@ -1179,6 +1245,7 @@
     }
 
     function renderAll() {
+      applyTheme();
       renderUserToggle();
       renderGoals();
       renderSummary();
@@ -1211,12 +1278,8 @@
       });
 
       saveBtn.addEventListener("click", () => {
-        const workouts = Number(
-          document.getElementById("goalWorkouts").value || 0
-        );
-        const minutes = Number(
-          document.getElementById("goalMinutes").value || 0
-        );
+        const workouts = Number(document.getElementById("goalWorkouts").value || 0);
+        const minutes = Number(document.getElementById("goalMinutes").value || 0);
 
         const user = getActiveUser();
         user.goals.workoutsPerWeek = Math.max(0, Math.floor(workouts));
@@ -1245,12 +1308,8 @@
         const date = dateInput.value;
         if (!date) return;
 
-        const workouts = Number(
-          document.getElementById("logWorkouts").value || 0
-        );
-        const minutes = Number(
-          document.getElementById("logMinutes").value || 0
-        );
+        const workouts = Number(document.getElementById("logWorkouts").value || 0);
+        const minutes = Number(document.getElementById("logMinutes").value || 0);
         const stepsRaw = document.getElementById("logSteps").value.trim();
         const notes = document.getElementById("logNotes").value.trim();
 
@@ -1344,7 +1403,20 @@
       });
     }
 
-    // Register service worker for PWA
+    function setupThemeSelect() {
+      const select = document.getElementById("themeSelect");
+      if (!select) return;
+
+      select.value = state.theme || "midnight";
+
+      select.addEventListener("change", () => {
+        const theme = select.value || "midnight";
+        state.theme = theme;
+        applyTheme();
+        saveState();
+      });
+    }
+
     function setupServiceWorker() {
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
@@ -1356,12 +1428,14 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+      applyTheme();
       setupUserToggle();
       setupGoalsEditing();
       setupLogForm();
       setupDeleteHandler();
       setupEncouragementForm();
       setupEditNames();
+      setupThemeSelect();
       setupServiceWorker();
       renderAll();
       setupRealtimeSync();
