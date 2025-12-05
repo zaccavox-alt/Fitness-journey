@@ -1279,15 +1279,17 @@
       listEl.innerHTML = items;
     }
 
-    function renderAll() {
+        function renderAll() {
       applyTheme();
       renderUserToggle();
       renderGoals();
       renderSummary();
+      renderStreaksAndBadges();
       renderEntries();
       renderCharts();
       renderEncouragement();
     }
+
 
     function setupUserToggle() {
       const toggle = document.getElementById("userToggle");
@@ -1475,7 +1477,275 @@
       renderAll();
       setupRealtimeSync();
     });
+        function getLast7DaySeries(user) {
+      const entries = user.entries || [];
+      const now = new Date();
+      const days = [];
+      ...
+      return {
+        labels: days.map((d) => d.label),
+        workouts,
+        minutes,
+      };
+    }
+    function computeStreakInfo(dateSet) {
+      if (!dateSet || dateSet.size === 0) {
+        return { current: 0, best: 0 };
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const toKey = (d) => {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      };
+
+      // Current streak: count backwards from today
+      let current = 0;
+      let cursor = new Date(today);
+      while (true) {
+        const key = toKey(cursor);
+        if (dateSet.has(key)) {
+          current++;
+          cursor.setDate(cursor.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      // Best streak: longest run in history
+      const sortedDates = Array.from(dateSet)
+        .map((s) => new Date(s + "T00:00:00"))
+        .filter((d) => !isNaN(d))
+        .sort((a, b) => a - b);
+
+      let best = 0;
+      let run = 0;
+      let prev = null;
+
+      for (const d of sortedDates) {
+        if (!prev) {
+          run = 1;
+        } else {
+          const diffDays = Math.round(
+            (d - prev) / (1000 * 60 * 60 * 24)
+          );
+          if (diffDays === 1) {
+            run++;
+          } else {
+            run = 1;
+          }
+        }
+        if (run > best) best = run;
+        prev = d;
+      }
+
+      return { current, best };
+    }
+
+    function getUserStats(user) {
+      const entries = user.entries || [];
+      const dateSet = new Set();
+      let totalWorkouts = 0;
+      let totalMinutes = 0;
+
+      entries.forEach((e) => {
+        if (!e.date) return;
+        const key = e.date;
+        dateSet.add(key);
+        totalWorkouts += Number(e.workouts || 0);
+        totalMinutes += Number(e.minutes || 0);
+      });
+
+      const streak = computeStreakInfo(dateSet);
+
+      const now = new Date();
+      const thirtyAgo = new Date(now);
+      thirtyAgo.setDate(now.getDate() - 29);
+      let activeDays30 = 0;
+
+      dateSet.forEach((ds) => {
+        const d = new Date(ds + "T00:00:00");
+        if (!isNaN(d) && d >= thirtyAgo && d <= now) {
+          activeDays30++;
+        }
+      });
+
+      const last7 = getLast7DayTotals(user);
+
+      return {
+        totalWorkouts,
+        totalMinutes,
+        dateSet,
+        streakCurrent: streak.current,
+        streakBest: streak.best,
+        activeDays30,
+        last7,
+      };
+    }
+
+    function getCoupleStreak(statsYou, statsPartner) {
+      const both = new Set();
+      statsYou.dateSet.forEach((d) => {
+        if (statsPartner.dateSet.has(d)) {
+          both.add(d);
+        }
+      });
+      return computeStreakInfo(both);
+    }
+
+    const BADGE_DEFS = [
+      {
+        id: "first_workout",
+        scope: "user",
+        label: "First Step",
+        icon: "⭐",
+        test: (stats) => stats.totalWorkouts >= 1,
+      },
+      {
+        id: "three_day_streak",
+        scope: "user",
+        label: "3-Day Streak",
+        icon: "🔥",
+        test: (stats) => stats.streakBest >= 3,
+      },
+      {
+        id: "seven_day_streak",
+        scope: "user",
+        label: "7-Day Streak",
+        icon: "🏅",
+        test: (stats) => stats.streakBest >= 7,
+      },
+      {
+        id: "ten_workouts",
+        scope: "user",
+        label: "10 Workouts",
+        icon: "💪",
+        test: (stats) => stats.totalWorkouts >= 10,
+      },
+      {
+        id: "thousand_minutes",
+        scope: "user",
+        label: "1000 Minutes",
+        icon: "⏱️",
+        test: (stats) => stats.totalMinutes >= 1000,
+      },
+      {
+        id: "couple_same_day",
+        scope: "couple",
+        label: "In Sync",
+        icon: "❤️",
+        test: (youStats, partnerStats) => {
+          const now = new Date();
+          const sevenAgo = new Date(now);
+          sevenAgo.setDate(now.getDate() - 6);
+
+          const inRange = (dateStr) => {
+            const d = new Date(dateStr + "T00:00:00");
+            return !isNaN(d) && d >= sevenAgo && d <= now;
+          };
+
+          const youSet = new Set();
+          const partnerSet = new Set();
+
+          youStats.dateSet.forEach((d) => {
+            if (inRange(d)) youSet.add(d);
+          });
+          partnerStats.dateSet.forEach((d) => {
+            if (inRange(d)) partnerSet.add(d);
+          });
+
+          let any = false;
+          youSet.forEach((d) => {
+            if (partnerSet.has(d)) any = true;
+          });
+
+          return any;
+        },
+      },
+      {
+        id: "couple_20_workouts",
+        scope: "couple",
+        label: "Tag Team 20",
+        icon: "👯",
+        test: (youStats, partnerStats) =>
+          youStats.totalWorkouts + partnerStats.totalWorkouts >= 20,
+      },
+    ];
+
+    function renderStreaksAndBadges() {
+      const statsYou = getUserStats(state.users.you);
+      const statsPartner = getUserStats(state.users.partner);
+      const activeKey = getActiveUserKey();
+      const activeStats =
+        activeKey === "you" ? statsYou : statsPartner;
+      const coupleStreak = getCoupleStreak(statsYou, statsPartner);
+
+      const streakRow = document.getElementById("streakRow");
+      const badgeGrid = document.getElementById("badgeGrid");
+
+      // Streak chips
+      streakRow.innerHTML = `
+        <div class="chip">
+          <span class="chip-dot"></span>
+          Current streak: ${activeStats.streakCurrent} day${
+        activeStats.streakCurrent === 1 ? "" : "s"
+      }
+        </div>
+        <div class="chip">
+          <span class="chip-dot"></span>
+          Best streak: ${activeStats.streakBest} day${
+        activeStats.streakBest === 1 ? "" : "s"
+      }
+        </div>
+        <div class="chip">
+          <span class="chip-dot"></span>
+          Together streak: ${coupleStreak.best} day${
+        coupleStreak.best === 1 ? "" : "s"
+      }
+        </div>
+      `;
+
+      // Badges for active user + couple
+      const userBadges = BADGE_DEFS.filter((b) => b.scope === "user");
+      const coupleBadges = BADGE_DEFS.filter(
+        (b) => b.scope === "couple"
+      );
+
+      const badgeHtml = [];
+
+      userBadges.forEach((b) => {
+        const unlocked = b.test(activeStats);
+        badgeHtml.push(
+          `<div class="badge ${unlocked ? "" : "locked"}">
+            <span class="badge-icon">${b.icon}</span>
+            <span class="badge-label">${b.label}</span>
+          </div>`
+        );
+      });
+
+      coupleBadges.forEach((b) => {
+        const unlocked = b.test(statsYou, statsPartner);
+        badgeHtml.push(
+          `<div class="badge ${unlocked ? "" : "locked"}">
+            <span class="badge-icon">${b.icon}</span>
+            <span class="badge-label">${b.label}</span>
+          </div>`
+        );
+      });
+
+      badgeGrid.innerHTML =
+        badgeHtml.join("") ||
+        `<div class="empty-state" style="padding:0.4rem 0; font-size:0.78rem;">
+          Start logging to unlock badges together. 🏅
+        </div>`;
+    }
+
   </script>
 </body>
 </html>
+
 
