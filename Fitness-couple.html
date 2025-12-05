@@ -9,7 +9,6 @@
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon-192.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-  <link rel="manifest" href="manifest.webmanifest" />
   <style>
     * {
       box-sizing: border-box;
@@ -460,6 +459,10 @@
       line-height: 1.3;
     }
   </style>
+
+  <!-- Firebase (compat SDKs for simple usage from CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <div class="app">
@@ -615,6 +618,36 @@
 
   <script>
     const APP_KEY = "couple_fitness_v1";
+    const ROOM_KEY = "couple_fitness_room_id";
+
+    // 🔐 1) PASTE YOUR FIREBASE CONFIG HERE
+    // Replace the placeholder strings with the values from Firebase console.
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBftBxf5k7Nf0n2LnXUGNn2jK9clCejpuQ",
+      authDomain: "fitness-journey-46e01.firebaseapp.com",
+      projectId: "fitness-journey-46e01",
+      storageBucket: "fitness-journey-46e01.firebasestorage.app",
+      messagingSenderId: "308958691826",
+      appId: "1:308958691826:web:1d785af1f576fe6272eb6b"
+    };
+
+    function initFirebase() {
+      try {
+        if (!window.firebase) return null;
+        if (FIREBASE_CONFIG.apiKey.startsWith("PASTE_")) {
+          console.warn("Firebase config not filled in yet – running local-only.");
+          return null;
+        }
+        const app = firebase.initializeApp(FIREBASE_CONFIG);
+        return firebase.firestore();
+      } catch (e) {
+        console.error("Firebase init failed", e);
+        return null;
+      }
+    }
+
+    const db = initFirebase();
+    let suppressRemote = false;
 
     const defaultState = {
       activeUser: "you",
@@ -668,6 +701,7 @@
     }
 
     function addMissingEntryIdsAndLabels(stateObj) {
+      if (!stateObj.users) stateObj.users = {};
       ensureUserShape(stateObj, "you", "You");
       ensureUserShape(stateObj, "partner", "Partner");
 
@@ -710,8 +744,75 @@
 
     let state = loadState();
 
-    function saveState() {
+    function getRoomId() {
+      let roomId = localStorage.getItem(ROOM_KEY);
+      if (roomId && roomId.trim()) return roomId.trim();
+
+      roomId = window.prompt(
+        "Enter a room code to sync with your partner (you both must use the same code):",
+        "our-fitness-room"
+      );
+      if (!roomId) roomId = "default-room";
+      roomId = roomId.trim();
+      localStorage.setItem(ROOM_KEY, roomId);
+      return roomId;
+    }
+
+    function saveState(localOnly = false) {
       localStorage.setItem(APP_KEY, JSON.stringify(state));
+      if (localOnly || !db) return;
+
+      const roomId = getRoomId();
+      const docRef = db.collection("rooms").doc(roomId);
+      const payload = {
+        state: state,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      };
+
+      suppressRemote = true;
+      docRef.set(payload).catch((err) => {
+        suppressRemote = false;
+        console.error("Failed to sync to cloud", err);
+      });
+    }
+
+    function setupRealtimeSync() {
+      if (!db) return;
+      const roomId = getRoomId();
+      const docRef = db.collection("rooms").doc(roomId);
+
+      // Initial load from cloud (if exists)
+      docRef
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            const data = doc.data();
+            if (data && data.state) {
+              state = data.state;
+              addMissingEntryIdsAndLabels(state);
+              saveState(true);
+              renderAll();
+            }
+          } else {
+            // If no doc yet, push our current local state
+            saveState(false);
+          }
+        })
+        .catch((err) => console.error("Initial sync load failed", err));
+
+      // Realtime updates
+      docRef.onSnapshot((snapshot) => {
+        const data = snapshot.data();
+        if (!data || !data.state) return;
+        if (suppressRemote) {
+          suppressRemote = false;
+          return;
+        }
+        state = data.state;
+        addMissingEntryIdsAndLabels(state);
+        saveState(true);
+        renderAll();
+      });
     }
 
     function getActiveUserKey() {
@@ -1263,6 +1364,7 @@
       setupEditNames();
       setupServiceWorker();
       renderAll();
+      setupRealtimeSync();
     });
   </script>
 </body>
